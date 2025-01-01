@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: communication_app
+    command: ["./communication_interface"]
+    networks:
+      - communication_net
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: communication_tests
+    command: ["./runTests"]
+    depends_on:
+      - app
+    networks:
+      - communication_net
+
+networks:
+  communication_net:
+    driver: bridge
