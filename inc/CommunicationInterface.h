@@ -1,11 +1,12 @@
-// include/CommunicationInterface.h
 #ifndef COMMUNICATION_INTERFACE_H
 #define COMMUNICATION_INTERFACE_H
-
+// Include Standard Library Headers
 #include <string>
 #include <functional>
 #include <memory>
 #include <mutex>
+
+// Include Local Header Files
 #include "ISecurity.h"
 #include "DataPacket.h"
 
@@ -22,16 +23,16 @@ public:
     ~CommunicationInterface();
 
     // Public Methods
-    bool sendControlCommand(const Command& command);
-    bool receiveState(State& state);
+    bool sendControlCommand(const DataPacket::Command& command);
+    bool receiveState(DataPacket::State& state);
 
-    // Optional: Set callback for incoming states
-    void setStateCallback(std::function<void(const State&)> callback);
+    // Set callback for incoming states
+    void setStateCallback(std::function<void(const DataPacket::State&)> callback);
 
 private:
     // Data Manipulation Methods
-    std::string encodeCommand(const Command& command);
-    bool decodeState(const std::string& jsonStr, State& state);
+    std::string encodeCommand(const DataPacket::Command& command);
+    bool decodeState(const std::string& jsonStr, DataPacket::State& state);
 
     // Communication Methods (Platform-Agnostic Placeholder)
     bool sendData(const std::string& data);
@@ -39,7 +40,7 @@ private:
 
     // Member Variables
     std::mutex mtx_; // For thread safety
-    std::function<void(const State&)> stateCallback_;
+    std::function<void(const DataPacket::State&)> stateCallback_;
     std::unique_ptr<ISecurity> securityModule_; // Security module
 };
 

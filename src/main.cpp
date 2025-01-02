@@ -1,15 +1,16 @@
-// src/main.cpp
 #include "CommunicationInterface.h"
 #include "AESCBCSecurity.h"
+#include "DataPacket.h"
 #include <iostream>
 #include <memory>
 
+
+
 int main() {
     // Pre-shared key (hexadecimal representation)
-    // Example 128-bit key: "00112233445566778899aabbccddeeff"
-    std::string keyHex = "00112233445566778899AABBCCDDEEFF";
+    std::string keyHex = "00112233445566778899AABBCCDDEEFF"; // 128-bit key
 
-    // Instantiate the security module with the pre-shared key
+    // Instantiate the AES-CBC security module with the pre-shared key
     std::unique_ptr<ISecurity> securityModule;
     try {
         securityModule = std::make_unique<AESCBCSecurity>(keyHex);
@@ -22,15 +23,15 @@ int main() {
     // Instantiate CommunicationInterface with the security module
     CommunicationInterface comm(std::move(securityModule));
 
-    // // Optional: Set a callback for receiving states
-    // comm.setStateCallback([](const CommunicationInterface::State& state) {
-    //     std::cout << "Callback - Received State:\n";
-    //     std::cout << "Status: " << state.status << "\n";
-    //     std::cout << "Value: " << state.value << "\n";
-    // });
+    // Optional: Set a callback for receiving states
+    comm.setStateCallback([](const DataPacket::State& state) {
+        std::cout << "Callback - Received State:\n";
+        std::cout << "Status: " << state.status << "\n";
+        std::cout << "Value: " << state.value << "\n";
+    });
 
     // Creating and sending a control command
-    CommunicationInterface::Command command;
+    DataPacket::Command command;
     command.commandName = "START";
     command.speed = 100;
     command.duration = 60;
@@ -42,7 +43,7 @@ int main() {
     }
 
     // Receiving the state
-    CommunicationInterface::State state;
+    DataPacket::State state;
     if(comm.receiveState(state)) {
         std::cout << "Received State:\n";
         std::cout << "Status: " << state.status << "\n";

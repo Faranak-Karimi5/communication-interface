@@ -16,7 +16,7 @@ A C++ class that facilitates communication between two devices by handling data 
 - **Communication Platform:** Abstracted away to focus on data processing without implementing real communication protocols.
 
 ## Requirements Traceability
-Refer to the [Requirements Traceability Matrix](REQUIREMENTS_TRACEABILITY.md) to see how each functional requirement is validated through unit tests.
+Refer to the [Requirements Traceability Matrix](REQUIREMENTS.md) to see how each functional requirement is validated through unit tests.
 
 ## Design Documentation
 Detailed design and architecture information can be found in the [DESIGN.md](DESIGN.md) file.
@@ -34,7 +34,7 @@ Detailed design and architecture information can be found in the [DESIGN.md](DES
 docker-compose build
 ```
 
-#### Building the Docker Images
+#### Running the Communication Interface Service
 ```bash
 docker-compose up app
 ```

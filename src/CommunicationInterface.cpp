@@ -1,4 +1,3 @@
-// src/CommunicationInterface.cpp
 #include "CommunicationInterface.h"
 #include <iostream>
 #include <sstream>
@@ -6,23 +5,24 @@
 
 // Constructor and Destructor
 CommunicationInterface::CommunicationInterface(std::unique_ptr<ISecurity> securityModule)
-    : securityModule_(std::move(securityModule)) {
-    // Initialize communication channels if necessary
+    : securityModule_(std::move(securityModule)) { 
+
+    // Initialize communication channels of underlying networking platform
 }
 
 CommunicationInterface::~CommunicationInterface() {
-    // Clean up resources if necessary
+    // Clean up resources if needed in later implementations
 }
 
 // Data Manipulation Methods
 
 /**
- * @brief Encodes a Command object to a JSON string.
+ * @brief Encodes a DataPacket::Command object to a JSON string.
  *
- * @param command The Command object to encode.
- * @return JSON string representing the Command.
+ * @param command The DataPacket::Command object to encode.
+ * @return JSON string representing the DataPacket::Command.
  */
-std::string CommunicationInterface::encodeCommand(const Command& command) {
+std::string CommunicationInterface::encodeCommand(const DataPacket::Command& command) {
     nlohmann::json j;
     j["commandName"] = command.commandName;
     j["speed"] = command.speed;
@@ -31,13 +31,13 @@ std::string CommunicationInterface::encodeCommand(const Command& command) {
 }
 
 /**
- * @brief Decodes a JSON string to a State object.
+ * @brief Decodes a JSON string to a DataPacket::State object.
  *
  * @param jsonStr The JSON string to decode.
- * @param state The State object to populate.
+ * @param state The DataPacket::State object to populate.
  * @return true if decoding is successful, false otherwise.
  */
-bool CommunicationInterface::decodeState(const std::string& jsonStr, State& state) {
+bool CommunicationInterface::decodeState(const std::string& jsonStr, DataPacket::State& state) {
     try {
         nlohmann::json j = nlohmann::json::parse(jsonStr);
         state.status = j.at("status").get<std::string>();
@@ -56,10 +56,10 @@ bool CommunicationInterface::decodeState(const std::string& jsonStr, State& stat
 /**
  * @brief Sends a control command after validating, encoding, and encrypting it.
  *
- * @param command The Command object to send.
+ * @param command The DataPacket::Command object to send.
  * @return true if sending is successful, false otherwise.
  */
-bool CommunicationInterface::sendControlCommand(const Command& command) {
+bool CommunicationInterface::sendControlCommand(const DataPacket::Command& command) {
     std::lock_guard<std::mutex> lock(mtx_);
     try {
         command.validate();
@@ -81,10 +81,10 @@ bool CommunicationInterface::sendControlCommand(const Command& command) {
 /**
  * @brief Receives state data, decrypts, decodes, and validates it.
  *
- * @param state The State object to populate with received data.
+ * @param state The DataPacket::State object to populate with received data.
  * @return true if receiving and processing is successful, false otherwise.
  */
-bool CommunicationInterface::receiveState(State& state) {
+bool CommunicationInterface::receiveState(DataPacket::State& state) {
     std::lock_guard<std::mutex> lock(mtx_);
     std::string encryptedData;
     if (!receiveData(encryptedData)) {
@@ -112,9 +112,9 @@ bool CommunicationInterface::receiveState(State& state) {
 /**
  * @brief Sets a callback function to handle received states.
  *
- * @param callback A function that takes a const State& as parameter.
+ * @param callback A function that takes a const DataPacket::State& as parameter.
  */
-void CommunicationInterface::setStateCallback(std::function<void(const State&)> callback) {
+void CommunicationInterface::setStateCallback(std::function<void(const DataPacket::State&)> callback) {
     std::lock_guard<std::mutex> lock(mtx_);
     stateCallback_ = callback;
 }
@@ -128,7 +128,7 @@ void CommunicationInterface::setStateCallback(std::function<void(const State&)> 
  * @return true if sending is successful, false otherwise.
  */
 bool CommunicationInterface::sendData(const std::string& data) {
-    // Placeholder: Simulate sending data (e.g., write to a file, console, etc.)
+    // Placeholder: Simulate sending data over a network
     std::cout << "Sending Encrypted Data: " << data << "\n";
     return true;
 }
@@ -140,10 +140,15 @@ bool CommunicationInterface::sendData(const std::string& data) {
  * @return true if receiving is successful, false otherwise.
  */
 bool CommunicationInterface::receiveData(std::string& data) {
-    // Placeholder: Simulate receiving data (e.g., read from a file, console, etc.)
-    // For demonstration, we encrypt a sample plaintext and assign it to data
+    // Simulate receiving encrypted data by encrypting sample plaintext
     std::string samplePlainText = "{\"status\": \"OK\", \"value\": 42}";
     data = securityModule_->encrypt(samplePlainText);
+    
+    if(data.empty()) {
+        std::cerr << "Failed to encrypt sample received data.\n";
+        return false;
+    }
+
     std::cout << "Received Encrypted Data: " << data << "\n";
     return true;
 }

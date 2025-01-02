@@ -19,13 +19,13 @@ AESCBCSecurity::AESCBCSecurity(const std::string& keyHex) {
         throw std::invalid_argument("Invalid key length. Expected " + std::to_string(CryptoPP::AES::DEFAULT_KEYLENGTH) + " bytes.");
     }
 
-    key_.Resize(CryptoPP::AES::DEFAULT_KEYLENGTH);
+    key_.resize(CryptoPP::AES::DEFAULT_KEYLENGTH);
     decoder.Get(key_, key_.size());
 }
 
 AESCBCSecurity::~AESCBCSecurity() {
-    // Zero out the key memory for security
-    CryptoPP::ZeroMemory(key_.BytePtr(), key_.size());
+    // clean up the memory for security and memory safety
+    CryptoPP::SecureWipeArray(key_.BytePtr(), key_.size());
 }
 
 std::string AESCBCSecurity::encrypt(const std::string& plainText) {
@@ -77,7 +77,7 @@ std::string AESCBCSecurity::decrypt(const std::string& cipherText) {
         CBC_Mode<AES>::Decryption decryption;
         decryption.SetKeyWithIV(key_, key_.size(), iv);
 
-        StringSource ss(reinterpret_cast<const char*>(actualCipherText), cipherSize, true,
+        StringSource ss(reinterpret_cast<const byte*>(actualCipherText), cipherSize, true,
             new StreamTransformationFilter(decryption,
                 new StringSink(plainText)
             )

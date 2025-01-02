@@ -3,7 +3,7 @@
 
 #include <string>
 #include <stdexcept>
-
+namespace DataPacket {
 /**
  * @brief Represents a control command to be sent to the device.
  */
@@ -49,5 +49,5 @@ struct State {
         // Additional validations can be added here
     }
 };
-
+}
 #endif // DATA_PACKET_H
