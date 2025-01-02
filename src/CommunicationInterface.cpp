@@ -1,147 +1,149 @@
+// src/CommunicationInterface.cpp
 #include "CommunicationInterface.h"
 #include <iostream>
-#include <cryptopp/aes.h>
-#include <cryptopp/modes.h>
-#include <cryptopp/filters.h>
-#include <cryptopp/osrng.h>
-#include <cryptopp/hex.h>
 #include <sstream>
-#include <cstring>
+#include <nlohmann/json.hpp>
 
-
-CommunicationInterface::CommunicationInterface() {
-    // Constructor
-    std::cout<<"Constructor called"<<std::endl;
+// Constructor and Destructor
+CommunicationInterface::CommunicationInterface(std::unique_ptr<ISecurity> securityModule)
+    : securityModule_(std::move(securityModule)) {
+    // Initialize communication channels if necessary
 }
 
 CommunicationInterface::~CommunicationInterface() {
-    // Destructor
-    std::cout<<"Destructor called"<<std::endl;
-    
+    // Clean up resources if necessary
 }
 
-bool CommunicationInterface::sendControlCommand(const nlohmann::json& command) {
+// Data Manipulation Methods
+
+/**
+ * @brief Encodes a Command object to a JSON string.
+ *
+ * @param command The Command object to encode.
+ * @return JSON string representing the Command.
+ */
+std::string CommunicationInterface::encodeCommand(const Command& command) {
+    nlohmann::json j;
+    j["commandName"] = command.commandName;
+    j["speed"] = command.speed;
+    j["duration"] = command.duration;
+    return j.dump();
+}
+
+/**
+ * @brief Decodes a JSON string to a State object.
+ *
+ * @param jsonStr The JSON string to decode.
+ * @param state The State object to populate.
+ * @return true if decoding is successful, false otherwise.
+ */
+bool CommunicationInterface::decodeState(const std::string& jsonStr, State& state) {
+    try {
+        nlohmann::json j = nlohmann::json::parse(jsonStr);
+        state.status = j.at("status").get<std::string>();
+        state.value = j.at("value").get<int>();
+        state.validate();
+        return true;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Decoding error: " << e.what() << "\n";
+        return false;
+    }
+}
+
+// Public Methods
+
+/**
+ * @brief Sends a control command after validating, encoding, and encrypting it.
+ *
+ * @param command The Command object to send.
+ * @return true if sending is successful, false otherwise.
+ */
+bool CommunicationInterface::sendControlCommand(const Command& command) {
     std::lock_guard<std::mutex> lock(mtx_);
-    std::string encoded = encodeData(command);
-    //  Encrypt the data before sending it 
-    std::string encrypted = encryptData(encoded);
+    try {
+        command.validate();
+    }
+    catch (const std::invalid_argument& e) {
+        std::cerr << "Validation error: " << e.what() << "\n";
+        return false;
+    }
+
+    std::string encoded = encodeCommand(command);
+    std::string encrypted = securityModule_->encrypt(encoded);
+    if(encrypted.empty()) {
+        std::cerr << "Encryption failed.\n";
+        return false;
+    }
     return sendData(encrypted);
 }
 
-bool CommunicationInterface::receiveState(nlohmann::json& state) {
+/**
+ * @brief Receives state data, decrypts, decodes, and validates it.
+ *
+ * @param state The State object to populate with received data.
+ * @return true if receiving and processing is successful, false otherwise.
+ */
+bool CommunicationInterface::receiveState(State& state) {
     std::lock_guard<std::mutex> lock(mtx_);
-    std::string received;
-    if (!receiveData(received)) {
+    std::string encryptedData;
+    if (!receiveData(encryptedData)) {
+        std::cerr << "Failed to receive data.\n";
+        return false;
+    }
+    std::string decrypted = securityModule_->decrypt(encryptedData);
+    if(decrypted.empty()) {
+        std::cerr << "Decryption failed.\n";
+        return false;
+    }
+    if(!decodeState(decrypted, state)) {
+        std::cerr << "Failed to decode state.\n";
         return false;
     }
 
-    // Decrypt the recived data first
-    std::string decrypted = decryptData(received);
-
-    // Extract the state feild from recived JSON
-    return decodeData(decrypted, state); 
-}
-
-
-std::string CommunicationInterface::encodeData(const nlohmann::json& data) {
-    return data.dump();
-}
-
-//
-bool CommunicationInterface::decodeData(const std::string& dataStr, nlohmann::json& data) {
-    try {
-        data = nlohmann::json::parse(dataStr);
-        return true;
-    } catch (nlohmann::json::parse_error& e) {
-        std::cerr << "JSON Parsing Error: " << e.what() << "\n";
-        return false;
+    // Invoke callback if set
+    if (stateCallback_) {
+        stateCallback_(state);
     }
+
+    return true;
 }
 
+/**
+ * @brief Sets a callback function to handle received states.
+ *
+ * @param callback A function that takes a const State& as parameter.
+ */
+void CommunicationInterface::setStateCallback(std::function<void(const State&)> callback) {
+    std::lock_guard<std::mutex> lock(mtx_);
+    stateCallback_ = callback;
+}
+
+// Communication Methods (Platform-Agnostic Placeholder)
+
+/**
+ * @brief Placeholder method to simulate sending data.
+ *
+ * @param data The encrypted data to send.
+ * @return true if sending is successful, false otherwise.
+ */
 bool CommunicationInterface::sendData(const std::string& data) {
-    // Placeholder for sending data over the communication medium
-        std::cout << "Sending Data: " << data << "\n";
+    // Placeholder: Simulate sending data (e.g., write to a file, console, etc.)
+    std::cout << "Sending Encrypted Data: " << data << "\n";
     return true;
 }
 
+/**
+ * @brief Placeholder method to simulate receiving data.
+ *
+ * @param data The encrypted data received.
+ * @return true if receiving is successful, false otherwise.
+ */
 bool CommunicationInterface::receiveData(std::string& data) {
-    // Assume encrypted data is recived from a device 
-    std::string PlainData = R"({"status": "OK", "value": 42})";
-    data = encryptData(PlainData);
-    std::cout << "Received Data (Encrypted): " << data << "\n";
+    // Placeholder: Simulate receiving data (e.g., read from a file, console, etc.)
+    // For demonstration, we encrypt a sample plaintext and assign it to data
+    std::string samplePlainText = "{\"status\": \"OK\", \"value\": 42}";
+    data = securityModule_->encrypt(samplePlainText);
+    std::cout << "Received Encrypted Data: " << data << "\n";
     return true;
-}
-
-// Encryption function
-std::string CommunicationInterface::encryptData(const std::string& plainText) {
-    
-    using namespace CryptoPP;
-    
-    AutoSeededRandomPool prng;
-    
-    byte key[AES::DEFAULT_KEYLENGTH];
-    byte iv[AES::BLOCKSIZE];
-    
-    prng.GenerateBlock(key, sizeof(key));
-    prng.GenerateBlock(iv, sizeof(iv));
-    
-    std::string cipherText;
-    
-    try {
-        CBC_Mode< AES >::Encryption encryption;
-        encryption.SetKeyWithIV(key, sizeof(key), iv);
-        
-        StringSource ss(plainText, true,
-            new StreamTransformationFilter(encryption,
-                new StringSink(cipherText)
-            )
-        );
-    }
-    catch (const Exception& e) {
-        std::cerr << "Encryption error: " << e.what() << std::endl;
-        return "";
-    }
-    
-    // Prepend IV for use in decryption
-    std::string ivStr(reinterpret_cast<char*>(iv), sizeof(iv));
-    return ivStr + cipherText;
-}
-
-// Decryption function
-std::string CommunicationInterface::decryptData(const std::string& cipherText) {
-
-    using namespace CryptoPP;
-    
-    if(cipherText.size() < AES::BLOCKSIZE) {
-        std::cerr << "Cipher text too short to contain IV." << std::endl;
-        return "";
-    }
-    
-    const byte* iv = reinterpret_cast<const byte*>(cipherText.data());
-    const byte* actualCipherText = reinterpret_cast<const byte*>(cipherText.data() + AES::BLOCKSIZE);
-    size_t cipherSize = cipherText.size() - AES::BLOCKSIZE;
-    byte key[AES::DEFAULT_KEYLENGTH];
-    
-    // Retrieve the key from a secure source; for example purposes, using a hardcoded key
-    // WARNING: Hardcoding keys is insecure and only for demonstration purposes
-    std::memcpy(key, "ThisIsASecretKey", 16);
-    
-    std::string plainText;
-    
-    try {
-        CBC_Mode< AES >::Decryption decryption;
-        decryption.SetKeyWithIV(key, sizeof(key), iv);
-        
-        StringSource ss(reinterpret_cast<const byte*>(actualCipherText), cipherSize, true,
-            new StreamTransformationFilter(decryption,
-                new StringSink(plainText)
-            )
-        );
-    }
-    catch (const Exception& e) {
-        std::cerr << "Decryption error: " << e.what() << std::endl;
-        return "";
-    }
-    
-    return plainText;
 }
