@@ -15,10 +15,11 @@ CommunicationInterface::~CommunicationInterface() {
 bool CommunicationInterface::sendControlCommand(const nlohmann::json& command) {
     std::lock_guard<std::mutex> lock(mtx_);
     std::string encoded = encodeData(command);
-    return sendData(encoded);
+    //  Encrypt the data before sending it 
+    std::string encrypted = encryptData(encoded);
+    return sendData(encrypted);
 }
 
-// Assume data format: JSON
 bool CommunicationInterface::receiveState(nlohmann::json& state) {
     std::lock_guard<std::mutex> lock(mtx_);
     std::string received;
@@ -26,16 +27,19 @@ bool CommunicationInterface::receiveState(nlohmann::json& state) {
         return false;
     }
 
-    return decodeData(received, state); 
+    // Decrypt the recived data first
+    std::string decrypted = decryptData(received);
+
+    // Extract the state feild from recived JSON
+    return decodeData(decrypted, state); 
 }
 
 
-// Assume data format: JSON
 std::string CommunicationInterface::encodeData(const nlohmann::json& data) {
     return data.dump();
 }
 
-// Assume data format: JSON
+//
 bool CommunicationInterface::decodeData(const std::string& dataStr, nlohmann::json& data) {
     try {
         data = nlohmann::json::parse(dataStr);
@@ -59,3 +63,18 @@ bool CommunicationInterface::receiveData(std::string& data) {
     return true;
 }
 
+// Encryption function
+std::string CommunicationInterface::encryptData(const std::string& plainText) {
+    
+    std::string cipherText;
+    cipherText = plainText;
+    return  cipherText;
+}
+
+// Decryption function
+std::string CommunicationInterface::decryptData(const std::string& cipherText) {
+
+    std::string plainText;
+    plainText = cipherText;
+    return plainText;
+}

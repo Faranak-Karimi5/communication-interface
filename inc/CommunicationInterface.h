@@ -28,6 +28,10 @@ private:
     bool sendData(const std::string& data);
     bool receiveData(std::string& data);
 
+    // Encryption-Decryption Methods 
+    std::string encryptData(const std::string& plainText);
+    std::string decryptData(const std::string& cipherText);
+
     // Member Variables
     std::mutex mtx_; // For thread safety
     
