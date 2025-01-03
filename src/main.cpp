@@ -7,13 +7,13 @@
 
 
 int main() {
-    // Pre-shared key (hexadecimal representation)
-    std::string keyHex = "00112233445566778899AABBCCDDEEFF"; // 128-bit key
-
+    // Get the pre-shared key from environment variable
+    const char* keyEnv = std::getenv("COMM_INTERFACE_KEY");
     // Instantiate the AES-CBC security module with the pre-shared key
+    std::cout<<"Env Key is: "<<keyEnv<<std::endl; 
     std::unique_ptr<ISecurity> securityModule;
     try {
-        securityModule = std::make_unique<AESCBCSecurity>(keyHex);
+        securityModule = std::make_unique<AESCBCSecurity>(keyEnv);
     }
     catch (const std::invalid_argument& e) {
         std::cerr << "Security module initialization failed: " << e.what() << "\n";
