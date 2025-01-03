@@ -23,7 +23,7 @@ CommunicationInterface::~CommunicationInterface() {
  * @return JSON string representing the DataPacket::Command.
  */
 std::string CommunicationInterface::encodeCommand(const DataPacket::Command& command) {
-    nlohmann::json j;
+    nlohmann::ordered_json j;
     j["commandName"] = command.commandName;
     j["speed"] = command.speed;
     j["duration"] = command.duration;
