@@ -153,7 +153,7 @@ TEST(CommunicationInterfaceTest, RQ006_SendReceive_WithEncryption_Success) {
     command.commandName = "INTEGRATION_TEST";
     command.speed = 80;
     command.duration = 40;
-    std::string deviceId = "device456";
+    std::string deviceId = "device123";
 
     // Send the command
     EXPECT_TRUE(comm->sendControlCommand(deviceId, command));
