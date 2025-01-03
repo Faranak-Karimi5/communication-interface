@@ -4,13 +4,45 @@
 #include <iostream>
 #include <memory>
 
+#include <fstream>
+#include <string>
+#include <cstdlib>
+
+std::string get_env_var(const std::string& key) {
+    char* val = getenv(key.c_str());
+    return val == NULL ? std::string("") : std::string(val);
+}
+
+std::string read_env_file(const std::string& key) {
+    std::ifstream file(".env");
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.find(key + "=") == 0) {
+            return line.substr(key.length() + 1);
+        }
+    }
+    return "";
+}
 
 
 int main() {
-    // Get the pre-shared key from environment variable
-    const char* keyEnv = std::getenv("COMM_INTERFACE_KEY");
+
+    // Get the key from the environment variable (Docker)
+    std::string keyEnv = get_env_var("COMM_INTERFACE_KEY");
+    // Read the key from ENV File (Direct builds)
+    if (keyEnv.empty()) {
+        keyEnv = read_env_file("COMM_INTERFACE_KEY");
+    }
+    
+    if (!keyEnv.empty()) {
+        std::cout << "COMM_INTERFACE_KEY: " << keyEnv << std::endl;
+    } else {
+        std::cerr << "COMM_INTERFACE_KEY not found" << std::endl;
+        return 1;
+    }
+    
     // Instantiate the AES-CBC security module with the pre-shared key
-    std::cout<<"Env Key is: "<<keyEnv<<std::endl; 
+
     std::unique_ptr<ISecurity> securityModule;
     try {
         securityModule = std::make_unique<AESCBCSecurity>(keyEnv);
