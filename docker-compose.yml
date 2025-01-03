@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     container_name: communication_app
     command: ["./communication_interface"]
+    environment:
+    - COMM_INTERFACE_KEY=00112233445566778899AABBCCDDEEFF
     networks:
       - communication_net
 
