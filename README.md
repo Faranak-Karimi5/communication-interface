@@ -1,107 +1,103 @@
-# Communication Interface Class
+# Design Documentation
 
-## Overview
-A C++ class that facilitates communication between two devices by handling data packet manipulation, encoding/decoding, validation, and supporting request-response workflows with encryption.
+## Architecture Overview
 
-## Features
-- **Send Control Commands:** Method to send validated and encrypted control commands.
-- **Receive Device State:** Method to receive, decrypt, decode, and validate device states.
-- **Data Encoding/Decoding:** Converts data to/from JSON format using `nlohmann/json`.
-- **Security:** Implements AES-CBC encryption and decryption using a modular security interface.
-- **Containerized Environment:** Uses Docker Compose to run the application and its tests as separate services.
-- **Comprehensive Testing:** Unit tests mapped to functional requirements using Google Test.
+The Communication Interface Class is designed following a modular architecture that separates concerns across different components. The primary components include:
 
-## Assumptions
-- **Data Packets Interpretation:** "Data packets" are structured JSON objects focusing on high-level data manipulation.
-- **Communication Platform:** Abstracted away to focus on data processing without implementing real communication protocols.
+- CommunicationInterface:  
+  Acts as the central hub for sending and receiving data. It handles encoding/decoding, validation, and interacts with the security module for encryption and decryption.
 
-## Requirements Traceability
-Refer to the [Requirements Traceability Matrix](REQUIREMENTS.md) to see how each functional requirement is validated through unit tests.
+- ISecurity Interface:  
+  An abstract interface defining encryption and decryption methods. This allows for flexibility in swapping out different security implementations without altering the CommunicationInterface.
 
-## Design Documentation
-Detailed design and architecture information can be found in the [DESIGN.md](DESIGN.md) file.
+- AESCBCSecurity:  
+  A concrete implementation of the ISecurity interface using AES-CBC encryption provided by Crypto++.
 
-## Build and Run Instructions
+- DataPacket Structures (Command and State):  
+  Structs representing the data being sent and received. They include validation methods to ensure data integrity.
 
-### Using Docker Compose
-
-#### Prerequisites
-- Install [Docker](https://www.docker.com/get-started)
-- Install [Docker Compose](https://docs.docker.com/compose/install/)
-
-#### Building the Docker Images
-```bash
-docker-compose build
-```
-
-#### Running the Communication Interface Service
-```bash
-docker-compose up app
-```
-
-#### Running the Tests Service
-```bash
-docker-compose up tests
-```
+- Unit Tests:  
+  Comprehensive tests using Google Test to verify the functionality of each component and their interactions.
 
 
-#### Running Both Services Simultaneously
-```bash
-docker-compose up
-```
+## Component Details
 
-### Without Docker (Local Build)
+### CommunicationInterface
 
-#### Prerequisites
-- C++11 compatible compiler
-- CMake
-- Git
+- Responsibilities:
+  - Sending control commands to specified devices.
+  - Receiving state information from specified devices.
+  - Encoding and decoding data packets.
+  - Encrypting and decrypting data using the security module.
+  - Handling callbacks for received states.
 
-#### Build Steps
-```bash
-mkdir build
-cd build
-cmake ..
-make
-```
+- Interactions:
+  - Utilizes the ISecurity interface for encryption and decryption.
+  - Depends on DataPacket structs for structured data representation.
 
-#### Run the Application
-```bash
-./communication_interface
-```
-#### Run the Tests
-```bash
-./runTests
-```
-## Usage Example
+### ISecurity Interface
+
+- Methods:
+  - std::string encrypt(const std::string& plaintext): Encrypts plaintext data.
+  - std::string decrypt(const std::string& ciphertext): Decrypts ciphertext data.
+
+- Purpose:
+  - Provides an abstraction for different encryption mechanisms, promoting flexibility and extensibility.
+
+### AESCBCSecurity
+
+- Implementation:
+  - Implements the ISecurity interface using AES-CBC mode from Crypto++.
+  
+- Features:
+  - Handles key management internally.
+  - Ensures secure encryption and decryption processes.
+
+### DataPacket Structures
+
+- Command Struct:
+  - Fields: commandName, speed, duration.
+  - Methods: validate() ensures that command fields meet predefined criteria.
+
+- State Struct:
+  - Fields: deviceId, status, value.
+  - Methods: validate() ensures that state fields are correctly populated.
+
+## Design Patterns Utilized
+
+- Strategy Pattern:  
+  Employed through the ISecurity interface to allow dynamic selection of encryption strategies.
 
 
-## Future Works
 
-1. Enhancing Crypto++ Build Process
-   
-   - Issue:  
-     Crypto++ has ceased supporting CMake, which required cloning a community-maintained repository and building it locally. This approach extends the build time.
-   
-   - Current Fix:  
-     The issue has been resolved for subsequent builds on Linux systems.
-   
-   - Outstanding Challenge:  
-     The prolonged build time remains an issue when building using the Dockerfile.
+## Thread Safety
 
+- Mutexes:  
+  Utilized within CommunicationInterface to protect shared resources and ensure thread-safe operations during send and receive processes.
 
-2. Abstracting `CommunicationInterface` for Enhanced Extensibility
-   
-   - Current Implementation:  
-     The CommunicationInterface class currently works with assumption that all devices send JSON data. Since there is no dependency on JSON datatype in interfaces, this class can be extended and inhereted for other data formats
-   
-   - Proposed Enhancement:  
-     Transform CommunicationInterface into an abstract class, allowing for multiple concrete implementations (e.g., CommunicationInterfaceXml, CommunicationInterfaceBinary, etc.).
-   
-   - Reason for Postponement:  
-     This enhancement is deferred as it was not part of the initial core requirements. Focusing on core functionalities ensures timely delivery and stability before introducing additional complexities.
+## Error Handling
 
-3. Generating and Integrating Doxygen Documentation
-   
-   - Current State:  
-     All method comments are Doxygen-friendly, but the generated documentation is not yet produced, and Doxygen is not installed in the Docker container.
+- Exception Handling:  
+  Implements try-catch blocks around critical operations like validation, encryption, and decryption to handle and log errors gracefully.
+
+- Logging:  
+  Logs errors and important events to std::cerr or a designated logging mechanism to aid in debugging and monitoring.
+
+## Extensibility
+
+- Security Modules:  
+  Can be easily extended by implementing the ISecurity interface with different encryption algorithms or security protocols.
+
+- Data Formats:  
+  Future enhancements can include support for additional data formats like XML or binary by extending the CommunicationInterface.
+
+## Future Enhancements
+
+- Real Networking Integration:  
+  Implement actual communication protocols (e.g., TCP/IP, MQTT) for real-time data transmission between devices.
+
+- Advanced Logging Mechanism:  
+  Integrate a robust logging framework (e.g., spdlog, Boost.Log) for better log management.
+
+- Device Management Layer:  
+  Develop a dedicated module for managing device registrations, statuses, and routing based on Device ID.

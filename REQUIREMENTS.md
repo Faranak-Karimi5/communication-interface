@@ -2,15 +2,16 @@
 
 ## Requirements Traceability Matrix
 
-| **Requirement ID** | **Description**                             | **Test Case(s)**                                 |
+| Requirement ID | Description                             | Test Case(s)                                 |
 |--------------------|---------------------------------------------|--------------------------------------------------|
-| RQ-001             | Send control command to the other device    | `Requirement1_SendControlCommand_Success`  , `RQ001_SendControlCommand_InvalidData`      |
-| RQ-002             | Receive state from the other device         | `Requirement2_ReceiveState_Success` , `Requirement2_ReceiveState_InvalidData`             |
-| RQ-003             | Encode data packets to JSON                 | `EncodeDecode_Encode_Success`                    |
-| RQ-004             | Decode data packets from JSON               | `EncodeDecode_Decode_Success`                    |
-| RQ-005             | Encrypt data packets             | `Security_Encryption_Success`                    |
-| RQ-006             | Integration test for request- response fellow| `RQ006_SendReceive_WithEncryption_Success` |
-
+| RQ-001             | Send control command to the other device with Device ID | RQ001_SendControlCommand_Success<br>RQ001_SendControlCommand_InvalidData        |
+| RQ-002             | Receive state from the other device, specifying Device ID | RQ002_ReceiveState_Success<br>RQ002_ReceiveState_InvalidDeviceId              |
+| RQ-003             | Encode data packets to JSON | RQ003_EncodeCommand_Success                    |
+| RQ-004             | Decode data packets from JSON | RQ004_DecodeState_Success<br>RQ004_DecodeState_MissingDeviceId                    |
+| RQ-005             | Encrypt data packets             | RQ005_EncryptDecrypt_Success                    |
+| RQ-006             | Integration test for sending and receiving with encryption | RQ006_SendReceive_WithEncryption_Success |
+| RQ-007             | Incorporate Device ID into communication methods to enable routing | RQ001_SendControlCommand_Success<br>RQ001_SendControlCommand_InvalidData |
+| RQ-008             | Provide a method to receive the state from a specific device using Device ID | RQ002_ReceiveState_Success<br>RQ002_ReceiveState_InvalidDeviceId |
 # Non-Functional Requirements
 
 
