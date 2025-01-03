@@ -1,5 +1,6 @@
 services:
   app:
+    image: communication_app:v1
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,6 +12,7 @@ services:
       - communication_net
 
   tests:
+    image: communication_app:v1
     build:
       context: .
       dockerfile: Dockerfile
