@@ -74,3 +74,34 @@ make
 ./runTests
 ```
 ## Usage Example
+
+
+## Future Works
+
+1. Enhancing Crypto++ Build Process
+   
+   - Issue:  
+     Crypto++ has ceased supporting CMake, which required cloning a community-maintained repository and building it locally. This approach extends the build time.
+   
+   - Current Fix:  
+     The issue has been resolved for subsequent builds on Linux systems.
+   
+   - Outstanding Challenge:  
+     The prolonged build time remains an issue when building using the Dockerfile.
+
+
+2. Abstracting `CommunicationInterface` for Enhanced Extensibility
+   
+   - Current Implementation:  
+     The CommunicationInterface class currently works with assumption that all devices send JSON data. Since there is no dependency on JSON datatype in interfaces, this class can be extended and inhereted for other data formats
+   
+   - Proposed Enhancement:  
+     Transform CommunicationInterface into an abstract class, allowing for multiple concrete implementations (e.g., CommunicationInterfaceXml, CommunicationInterfaceBinary, etc.).
+   
+   - Reason for Postponement:  
+     This enhancement is deferred as it was not part of the initial core requirements. Focusing on core functionalities ensures timely delivery and stability before introducing additional complexities.
+
+3. Generating and Integrating Doxygen Documentation
+   
+   - Current State:  
+     All method comments are Doxygen-friendly, but the generated documentation is not yet produced, and Doxygen is not installed in the Docker container.
