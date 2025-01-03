@@ -40,9 +40,7 @@ COPY . /app
 RUN git clone https://github.com/abdes/cryptopp-cmake.git
 
 # Create a build directory and build the project
-RUN mkdir build && cd build && cmake .. && cmake --build . && \
-    ls -l /app/build  
-
+RUN mkdir build && cd build && cmake .. && cmake --build .
 
 # Stage 2: Runtime
 FROM ubuntu:20.04
