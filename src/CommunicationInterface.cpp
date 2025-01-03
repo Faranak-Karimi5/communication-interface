@@ -70,6 +70,13 @@ bool CommunicationInterface::sendControlCommand(const DataPacket::Command& comma
     }
 
     std::string encoded = encodeCommand(command);
+    if(encoded.empty()) {
+        std::cerr << "Encoding failed.\n";
+        return false;
+    }
+    // Logging for demonstration purposes
+    std::cout << "Encoded Command to be sent: " << encoded << "\n";
+    
     std::string encrypted = securityModule_->encrypt(encoded);
     if(encrypted.empty()) {
         std::cerr << "Encryption failed.\n";

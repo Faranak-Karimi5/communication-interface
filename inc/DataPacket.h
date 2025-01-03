@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <iostream>
 namespace DataPacket {
 /**
  * @brief Represents a control command to be sent to the device.
@@ -26,6 +27,10 @@ struct Command {
         }
         if(duration <= 0) {
             throw std::invalid_argument("Duration must be positive.");
+        }
+        else
+        {
+            std::cout << "Command validated successfully.\n";
         }
     }
 };
