@@ -39,6 +39,7 @@ struct Command {
  * @brief Represents the state received from the device.
  */
 struct State {
+    std::string deviceId; // Added Device ID
     std::string status;
     int value;
 
@@ -48,6 +49,9 @@ struct State {
      * @throws std::invalid_argument if any validation fails.
      */
     void validate() const {
+        if(deviceId.empty()) {
+            throw std::invalid_argument("Device ID cannot be empty.");
+        }
         if(status.empty()) {
             throw std::invalid_argument("Status cannot be empty.");
         }

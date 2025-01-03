@@ -55,34 +55,47 @@ int main() {
     // Instantiate CommunicationInterface with the security module
     CommunicationInterface comm(std::move(securityModule));
 
-    // Optional: Set a callback for receiving states
+    // Callback for receiving states
     comm.setStateCallback([](const DataPacket::State& state) {
         std::cout << "Callback - Received State:\n";
+        std::cout << "Device ID: " << state.deviceId << "\n";
         std::cout << "Status: " << state.status << "\n";
         std::cout << "Value: " << state.value << "\n";
     });
-
+    /****************** Use Case 1: Sending Control Command ***************/
     // Creating and sending a control command
     DataPacket::Command command;
     command.commandName = "START";
     command.speed = 100;
     command.duration = 60;
+    std::string deviceId = "device789"; 
 
-    if(comm.sendControlCommand(command)) {
+    if(comm.sendControlCommand(deviceId, command)) {
         std::cout << "Control command sent successfully.\n";
     } else {
         std::cerr << "Failed to send control command.\n";
     }
-
-    // Receiving the state
+    /****************** Use Case 2: Receiving the state from wrong(device789) device ***************/
     DataPacket::State state;
-    if(comm.receiveState(state)) {
+    if(comm.receiveState(deviceId, state)) {
         std::cout << "Received State:\n";
+        std::cout << "Device ID: " << state.deviceId << "\n";
         std::cout << "Status: " << state.status << "\n";
         std::cout << "Value: " << state.value << "\n";
     } else {
         std::cerr << "Failed to receive state.\n";
     }
 
+    /****************** Use Case 2: Receiving the state from the right device (device123) ***************/
+    std::string StatedeviceId = "device123"; // Specify the target device ID
+
+    if(comm.receiveState(StatedeviceId, state)) {
+        std::cout << "Received State:\n";
+        std::cout << "Device ID: " << state.deviceId << "\n";
+        std::cout << "Status: " << state.status << "\n";
+        std::cout << "Value: " << state.value << "\n";
+    } else {
+        std::cerr << "Failed to receive state.\n";
+    }
     return 0;
 }
