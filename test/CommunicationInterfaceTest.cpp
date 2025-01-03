@@ -3,9 +3,10 @@
 #include "AESCBCSecurity.h"
 #include <memory>
 #include <nlohmann/json.hpp>
-
-// Pre-shared key (hexadecimal representation)
-std::string preSharedKeyHex = "00112233445566778899AABBCCDDEEFF"; // 128-bit key
+#include <iostream>
+ 
+// Pre-shared key : Since this is a test, we are using a hardcoded key
+std::string preSharedKeyHex = "00112233445566778899AABBCCDDEEFF";
 
 // Helper function to create CommunicationInterface with AES-CBC Security
 std::unique_ptr<CommunicationInterface> createCommInterface() {
@@ -54,38 +55,36 @@ TEST(CommunicationInterfaceTest, RQ002_ReceiveState_Success) {
 // Test for receiving state with invalid data (simulated)
 TEST(CommunicationInterfaceTest, RQ002_ReceiveState_InvalidData) {
     // RQ-002: The system shall provide a method to receive the state from the other device.
-    // Since receiveData is a placeholder and encrypts data, to simulate invalid data,
-    // you might need to mock receiveData or modify CommunicationInterface for testing.
-    // For simplicity, we'll skip this test or mark it as passed.
+    // Since this needs mock up of receiveData method, we will skip this test for now
     SUCCEED(); // Placeholder
 }
 
-// // Test for manual JSON encoding of Command
-// TEST(CommunicationInterfaceTest, RQ003_EncodeCommand_Success) {
-//     // RQ-003: The system shall encode data packets to JSON.
-//     DataPacket::Command command;
-//     command.commandName = "ENCODE_TEST";
-//     command.speed = 75;
-//     command.duration = 45;
+// Test for manual JSON encoding of Command
+TEST(CommunicationInterfaceTest, RQ003_EncodeCommand_Success) {
+    // RQ-003: The system shall encode data packets to JSON.
+    DataPacket::Command command;
+    command.commandName = "ENCODE_TEST";
+    command.speed = 75;
+    command.duration = 45;
 
-//     CommunicationInterface comm(nullptr); // Passing nullptr as security module for this test
-//     std::string jsonStr = comm.encodeCommand(command);
-//     std::string expectedJson = "{\"commandName\":\"ENCODE_TEST\",\"speed\":75,\"duration\":45}";
-//     EXPECT_EQ(jsonStr, expectedJson);
-// }
+    CommunicationInterface comm(nullptr); // Passing nullptr as security module for this test
+    std::string jsonStr = comm.encodeCommand(command);
+    std::string expectedJson = "{\"commandName\":\"ENCODE_TEST\",\"speed\":75,\"duration\":45}";
+    EXPECT_EQ(jsonStr, expectedJson);
+}
 
-// // Test for manual JSON decoding of State
-// TEST(CommunicationInterfaceTest, RQ004_DecodeState_Success) {
-//     // RQ-004: The system shall decode data packets from JSON.
-//     std::string jsonStr = "{\"status\":\"ACTIVE\",\"value\":100}";
-//     DataPacket::State state;
-//     CommunicationInterface comm(nullptr); // Passing nullptr as security module for this test
-//     bool result = comm.decodeState(jsonStr, state);
+// Test for manual JSON decoding of State
+TEST(CommunicationInterfaceTest, RQ004_DecodeState_Success) {
+    // RQ-004: The system shall decode data packets from JSON.
+    std::string jsonStr = "{\"status\":\"ACTIVE\",\"value\":100}";
+    DataPacket::State state;
+    CommunicationInterface comm(nullptr); // Passing nullptr as security module for this test
+    bool result = comm.decodeState(jsonStr, state);
 
-//     EXPECT_TRUE(result);
-//     EXPECT_EQ(state.status, "ACTIVE");
-//     EXPECT_EQ(state.value, 100);
-// }
+    EXPECT_TRUE(result);
+    EXPECT_EQ(state.status, "ACTIVE");
+    EXPECT_EQ(state.value, 100);
+}
 
 // Test for encryption and decryption functionality
 TEST(CommunicationInterfaceTest, RQ005_EncryptDecrypt_Success) {
