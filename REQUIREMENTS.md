@@ -4,35 +4,20 @@
 
 | **Requirement ID** | **Description**                             | **Test Case(s)**                                 |
 |--------------------|---------------------------------------------|--------------------------------------------------|
-| RQ-001             | Send control command to the other device    | `Requirement1_SendControlCommand_Success`        |
-| RQ-002             | Receive state from the other device         | `Requirement2_ReceiveState_Success`              |
+| RQ-001             | Send control command to the other device    | `Requirement1_SendControlCommand_Success`  , `RQ001_SendControlCommand_InvalidData`      |
+| RQ-002             | Receive state from the other device         | `Requirement2_ReceiveState_Success` , `Requirement2_ReceiveState_InvalidData`             |
 | RQ-003             | Encode data packets to JSON                 | `EncodeDecode_Encode_Success`                    |
 | RQ-004             | Decode data packets from JSON               | `EncodeDecode_Decode_Success`                    |
-| RQ-005             | (Optional) Encrypt data packets             | `Security_Encryption_Success`                    |
+| RQ-005             | Encrypt data packets             | `Security_Encryption_Success`                    |
+| RQ-006             | Integration test for request- response fellow| `RQ006_SendReceive_WithEncryption_Success` |
 
 # Non-Functional Requirements
 
-## Requirements Traceability Matrix
-
-| **Requirement ID** | **Description**                                                     | **Design Considerations**                                                                              |
-|--------------------|---------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| NFR-001            | **Flexibility in Security Methods**                                 | Utilizes the Strategy Pattern via `ISecurity` interface to allow runtime swapping of security modules  |
-| NFR-002            | **Extensibility for Communication Protocols**                      | Abstract communication methods; no dependency on specific network connections                           |
-| NFR-003            | **Separation of Concerns Between Security and Communication Logic** | Security logic is encapsulated within separate classes implementing `ISecurity`, maintaining cohesion |
-| NFR-004            | **Maintainability and Readability**                                 | Modular design, clear interfaces, comprehensive documentation                                          |
-| NFR-005            | **Performance Efficiency in Encryption and Decryption**             | Uses optimized Crypto++ libraries; minimal overhead in cryptographic operations                         |
-| NFR-006            | **Scalability to Handle Multiple Concurrent Operations**            | Thread-safe operations with mutexes; supports concurrent send/receive operations                        |
-| NFR-007            | **Data Security and Integrity**                                     | Implements AES-CBC encryption with robust key management                                               |
-| NFR-008            | **Robust Error Handling and Logging**                               | Comprehensive error logging and exception management                                                  |
-| NFR-009            | **Compatibility Across Different Platforms**                       | Uses standard libraries and interfaces; ensures cross-platform compatibility                           |
-| NFR-010            | **Easy Extensibility of Data Formats and Communication Protocols**  | No class signatures depend on specific data formats or network connections; promotes extension         |
-
-# Non-Functional Requirements Details
 
 ## NFR-001: Flexibility in Security Methods
 
 - **Description:**  
-  The system should allow changing the security methods (e.g., from AES-CBC to AES-GCM) at runtime without altering the security APIs used in the `CommunicationInterface` class.
+  The system shall allow changing the security methods (e.g., from AES-CBC to AES-GCM) at runtime without altering the security APIs used in the `CommunicationInterface` class.
 
 - **Design Considerations:**  
   Implements the **Strategy Pattern** through the `ISecurity` interface, enabling seamless swapping of security modules without affecting the communication logic.
@@ -75,21 +60,9 @@
 
 - **Benefits:**  
   - **Ease of Maintenance:** Simplifies debugging and feature additions.
-  - **Developer Onboarding:** Enhances the learning curve for new contributors.
-  
-## NFR-005: Performance Efficiency in Encryption and Decryption
 
-- **Description:**  
-  The encryption and decryption processes should be efficient to minimize communication latency.
 
-- **Design Considerations:**  
-  Utilizes **optimized Crypto++ libraries** and implements encryption/decryption in a manner that reduces computational overhead.
-
-- **Benefits:**  
-  - **Low Latency:** Ensures timely communication between devices.
-  - **Resource Optimization:** Minimizes CPU and memory usage during cryptographic operations.
-  
-## NFR-006: Scalability to Handle Multiple Concurrent Operations
+## NFR-005: Scalability to Handle Multiple Concurrent Operations
 
 - **Description:**  
   The system should efficiently handle multiple send and receive operations simultaneously without performance degradation.
@@ -99,21 +72,19 @@
 
 - **Benefits:**  
   - **High Throughput:** Supports multiple communication channels concurrently.
-  - **Reliability:** Maintains performance under high load conditions.
   
-## NFR-007: Data Security and Integrity
+## NFR-006: Data Security and Integrity
 
 - **Description:**  
-  Ensure that all data transmitted between devices is secure, maintaining both confidentiality and integrity.
+  Ensure that all data transmitted between devices is secure, maintaining both confidentiality.
 
 - **Design Considerations:**  
   Implements **AES-CBC encryption** with proper key management practices to secure data packets during transmission.
 
 - **Benefits:**  
   - **Confidentiality:** Prevents unauthorized access to sensitive data.
-  - **Integrity:** Ensures that data has not been tampered with during transit.
-  
-## NFR-008: Robust Error Handling and Logging
+
+## NFR-007: Robust Error Handling and Logging
 
 - **Description:**  
   The system should gracefully handle errors and maintain comprehensive logs for monitoring and debugging purposes.
@@ -122,10 +93,10 @@
   Integrates **comprehensive error logging** and **exception handling mechanisms** throughout the codebase to manage unexpected scenarios effectively.
 
 - **Benefits:**  
-  - **Stability:** Prevents application crashes and undefined behaviors.
+  - **Stability:** Prevents application crashes and undefined behaviors as much as possible.
   - **Debugging:** Facilitates the identification and resolution of issues through detailed logs.
   
-## NFR-009: Compatibility Across Different Platforms
+## NFR-008: Compatibility Across Different Platforms
 
 - **Description:**  
   The system should operate consistently across various operating systems and hardware platforms.
@@ -137,13 +108,13 @@
   - **Portability:** Simplifies deployment on diverse environments.
   - **Flexibility:** Accommodates a wide range of devices and systems.
   
-## NFR-010: Easy Extensibility of Data Formats and Communication Protocols
+## NFR-09: Easy Extensibility of Data Formats and Communication Protocols
 
 - **Description:**  
   The system should allow easy addition of new data formats and communication protocols without major overhauls.
 
 - **Design Considerations:**  
-  Designs the `CommunicationInterface` and associated classes to be **data format-agnostic**, promoting the integration of new formats through minimal interface extensions.
+  Designs the `CommunicationInterface` and associated classes to be **data format-agnostic** (No dependency to JSON in method signature) promoting the ease of extending an abstract class an integration of new formats through minimal interface extensions.
 
 - **Benefits:**  
   - **Future-Proofing:** Adapts to emerging data formats and protocols effortlessly.
@@ -151,6 +122,6 @@
     
 # Summary
 
-The **Communication Interface Class** is meticulously designed to meet both functional and non-functional requirements, ensuring secure, efficient, and scalable communication between devices. By adhering to best practices in software design, such as modularity, separation of concerns, and robust error handling, the system guarantees maintainability and flexibility for future enhancements.
+The **Communication Interface Class** is designed to meet both functional and non-functional requirements, ensuring secure, efficient, and scalable communication between devices. By adhering to best practices in software design, such as modularity, separation of concerns, and robust error handling, the system guarantees maintainability and flexibility for future enhancements.
 
 For any further questions or assistance, please refer to the [Design Documentation](DESIGN.md) or contact the project maintainer.
